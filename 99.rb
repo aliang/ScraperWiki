@@ -15,7 +15,7 @@ def parse_bill(page)
   name = title[0].content.sub(/ - Tithe an Oireachtais$/, "") if title[0]
   
   meta = page.search("//meta[@name='Abstract']")
-  description = meta[0]['content'] if meta[0]
+  abstract = meta[0]['content'] if meta[0]
   
   # update the description with full description, since it could be cut off
   # doesn't work right yet, we might have to dive into the hr tags again
@@ -23,7 +23,7 @@ def parse_bill(page)
   #   p.content.include?(description) ? p.content : nil }.compact[0]
   
   puts name
-  puts description
+  [name, abstract]
 =begin
   # OLD METHOD
   # take all the text between the first two <hr> tags
@@ -69,6 +69,7 @@ years = (1997..2010)
 agent = Mechanize.new
 
 # collect all the bills in this data structure
+bill_info = []
 
 years.each do |year|
   base_url = "http://www.oireachtas.ie/viewdoc.asp?DocID=-1&StartDate=1+January+#{year}&CatID=59"
@@ -89,14 +90,16 @@ years.each do |year|
   end
   
   # now for each bill, parse its "more info page"
-  bill_info = bill_urls.map { |bill_url|
+  # TODO: write out directly to scraper wiki api
+  bill_info = bill_info + bill_urls.map { |bill_url|
     page = agent.get(bill_url)
     info = parse_bill(page)
     info ? info : nil
   }.compact
-  # write everything to file (bill name, info, url)
-  write_bills_to_file(bill_info)
 end
 
-def write_bills_to_file
+# replace with scraper wiki api
+fh = File.open("99_output.txt", "w")
+bill_info.each do |bi|
+  fh.puts(bi.join(","))
 end
